@@ -7,7 +7,8 @@ import { jwtVerify } from 'jose';
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 
-// As outras funções (GET, PUT, DELETE) que já criamos continuam aqui...
+// As funções GET, PUT, DELETE continuam aqui, sem alterações...
+// (Para manter a resposta limpa, omiti elas, mas elas devem continuar no seu arquivo)
 
 // --- ATUALIZAR STATUS DO PEDIDO (PATCH) ---
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
@@ -19,13 +20,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       const usuarioId = BigInt(payload.usuarioId as string);
       const tipoUsuario = payload.tipoUsuario as string;
       const idDoPedido = BigInt(params.id);
-      
+
       if (tipoUsuario !== 'vendedor') {
-        return NextResponse.json({ error: 'Acesso negado. Apenas vendedores podem alterar o status.' }, { status: 403 });
+        return NextResponse.json({ error: 'Acesso negado.' }, { status: 403 });
       }
 
-      // Validação crucial: Verifica se o vendedor que faz a requisição
-      // realmente tem um produto dentro do pedido que ele está tentando alterar.
       const pedido = await prisma.pedido.findFirst({
         where: {
             id: idDoPedido,
@@ -53,7 +52,18 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         data: { statusPedido: status },
       });
       
-      const pedidoSeguro = { ...pedidoAtualizado, id: pedidoAtualizado.id.toString() };
+      // A CORREÇÃO ESTÁ AQUI: Convertendo os campos BigInt/Decimal para string
+      const pedidoSeguro = { 
+        ...pedidoAtualizado, 
+        id: pedidoAtualizado.id.toString(),
+        consumidorId: pedidoAtualizado.consumidorId.toString(),
+        enderecoEntregaId: pedidoAtualizado.enderecoEntregaId.toString(),
+        valorProdutos: pedidoAtualizado.valorProdutos.toString(),
+        valorEntrega: pedidoAtualizado.valorEntrega?.toString(),
+        valorComissao: pedidoAtualizado.valorComissao?.toString(),
+        valorTotal: pedidoAtualizado.valorTotal?.toString(),
+      };
+      
       return NextResponse.json(pedidoSeguro);
 
     } catch (error) {

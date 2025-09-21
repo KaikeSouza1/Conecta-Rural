@@ -11,25 +11,15 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/loja/page": [
+    "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/loja/page.js"
+      "static/chunks/app/login/page.js"
     ],
-    "/produtos/[id]/page": [
+    "/minhas-vendas/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/produtos/[id]/page.js"
-    ],
-    "/carrinho/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/carrinho/page.js"
-    ],
-    "/meus-pedidos/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/meus-pedidos/page.js"
+      "static/chunks/app/minhas-vendas/page.js"
     ]
   }
 }
