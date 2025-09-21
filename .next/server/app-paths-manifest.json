@@ -1,8 +1,11 @@
 {
-  "/produtores/[id]/page": "app/produtores/[id]/page.js",
-  "/api/produtores/[id]/route": "app/api/produtores/[id]/route.js",
-  "/api/auth/me/route": "app/api/auth/me/route.js",
   "/loja/page": "app/loja/page.js",
+  "/sobre/page": "app/sobre/page.js",
+  "/produtores/page": "app/produtores/page.js",
   "/api/produtos/route": "app/api/produtos/route.js",
-  "/page": "app/page.js"
+  "/meus-produtos/page": "app/meus-produtos/page.js",
+  "/api/produtos/[id]/route": "app/api/produtos/[id]/route.js",
+  "/meus-produtos/editar/[id]/page": "app/meus-produtos/editar/[id]/page.js",
+  "/api/produtos/meus/route": "app/api/produtos/meus/route.js",
+  "/meus-produtos/novo/page": "app/meus-produtos/novo/page.js"
 }
