@@ -10,16 +10,14 @@ export async function GET() {
       where: { tipoUsuario: 'vendedor' },
     });
 
-    // Conta quantos produtos estão cadastrados
-    const totalProdutos = await prisma.produto.count();
-    
-    // A média de avaliação será fixa por enquanto
-    const mediaAvaliacao = 4.8;
+    // Conta quantos produtos estão cadastrados e ativos
+    const totalProdutos = await prisma.produto.count({
+      where: { ativo: true },
+    });
 
     return NextResponse.json({
       produtores: totalProdutores,
       produtos: totalProdutos,
-      avaliacao: mediaAvaliacao,
     });
 
   } catch (error) {
