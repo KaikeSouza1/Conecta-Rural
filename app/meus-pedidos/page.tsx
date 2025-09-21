@@ -2,17 +2,17 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Cookies from 'js-cookie';
-import Link from 'next/link';
 
+// A CORREÇÃO ESTÁ AQUI: 'itens' em vez de 'itensPedido'
 interface Pedido {
   id: string;
   criadoEm: string;
   statusPedido: string;
   valorTotal: string;
-  itensPedido: {
+  itens: {
     quantidade: number;
     precoUnitarioCompra: string;
     produto: {
@@ -23,13 +23,18 @@ interface Pedido {
 }
 
 export default function MeusPedidosPage() {
-  const { user, isAuthLoading } = useAuth();
+  const { isAuthLoading } = useAuth();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (isAuthLoading) return;
+
     const token = Cookies.get('auth_token');
-    if (isAuthLoading || !token) return;
+    if (!token) {
+        setIsLoading(false);
+        return;
+    };
 
     async function fetchPedidos() {
       try {
@@ -66,7 +71,7 @@ export default function MeusPedidosPage() {
           {pedidos.length > 0 ? (
             pedidos.map((pedido) => (
               <div key={pedido.id} className="p-6 border rounded-lg shadow-md bg-gray-50">
-                <div className="flex justify-between items-start mb-4">
+                <div className="flex justify-between items-start mb-4 flex-wrap gap-4">
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">Pedido #{pedido.id}</h2>
                     <p className="text-sm text-gray-500">
@@ -77,7 +82,7 @@ export default function MeusPedidosPage() {
                      <p className="text-lg font-semibold text-gray-900">
                         Total: R$ {parseFloat(pedido.valorTotal).toFixed(2).replace('.', ',')}
                      </p>
-                     <span className="mt-1 inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                     <span className="mt-1 inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 capitalize">
                         {pedido.statusPedido}
                      </span>
                   </div>
@@ -85,8 +90,9 @@ export default function MeusPedidosPage() {
 
                 <div className="border-t border-gray-200 pt-4">
                   <h3 className="font-semibold text-gray-700 mb-2">Itens:</h3>
+                  {/* A CORREÇÃO ESTÁ AQUI: 'pedido.itens.map' em vez de 'pedido.itensPedido.map' */}
                   <ul className="space-y-4">
-                    {pedido.itensPedido.map((item, index) => (
+                    {pedido.itens.map((item, index) => (
                        <li key={index} className="flex items-center gap-4">
                          <img 
                            src={item.produto.imagemUrl || '/placeholder.png'} 
