@@ -25,6 +25,7 @@ model Endereco {
   usuarioId     BigInt    @map("usuario_id")
   logradouro    String    @db.VarChar(255)
   numero        String?   @db.VarChar(20)
+  complemento   String?   // <-- CAMPO ADICIONADO AQUI
   bairro        String    @db.VarChar(100)
   cidade        String    @db.VarChar(100)
   estado        String    @db.VarChar(2)
