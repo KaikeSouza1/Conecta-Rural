@@ -1,20 +1,29 @@
 // Caminho: app/layout.tsx
-import { AuthProvider } from '@/contexts/AuthContext';
 
-export const metadata = {
-  title: 'CONECTA RURAL',
-  description: 'Conectando o campo à cidade',
-};
+'use client';
+
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { CartProvider } from '@/contexts/CartContext';
+import { Header } from '@/components/Header'; // 1. Importar o Header
+
+const inter = Inter({ subsets: ['latin'] });
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="pt-br">
-      <body>
-        <AuthProvider>{children}</AuthProvider>
+      <body className={inter.className}>
+        <AuthProvider>
+          <CartProvider>
+            <Header /> {/* 2. Adicionar o Header aqui */}
+            <main>{children}</main> {/* O conteúdo da página fica aqui */}
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,4 +1,4 @@
-
+// Caminho: app/cadastro/page.tsx
 
 'use client';
 
@@ -65,10 +65,21 @@ const styles: { [key: string]: React.CSSProperties } = {
     textDecoration: 'none',
     fontWeight: '600',
   },
+  radioGroup: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '20px',
+    marginBottom: '20px',
+    textAlign: 'left',
+  },
 };
 
 export default function CadastroPage() {
   const router = useRouter();
+  // Novos estados para tipo de usuário e nome do negócio
+  const [tipoUsuario, setTipoUsuario] = useState('consumidor');
+  const [nomeNegocio, setNomeNegocio] = useState('');
+
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -91,7 +102,8 @@ export default function CadastroPage() {
           senha,
           cpf_cnpj: cpfCnpj,
           telefone,
-          tipo_usuario: 'consumidor',
+          tipo_usuario: tipoUsuario, // Envia o tipo de usuário selecionado
+          nome_negocio: nomeNegocio,   // Envia o nome do negócio
         }),
       });
       const data = await response.json();
@@ -101,7 +113,7 @@ export default function CadastroPage() {
       } else {
         setError(data.error || 'Erro no cadastro');
       }
-    } catch (err) { 
+    } catch (err) {
       setError('Ocorreu um erro de rede.');
     } finally {
       setIsLoading(false);
@@ -112,7 +124,44 @@ export default function CadastroPage() {
     <div style={styles.container}>
       <div style={styles.formBox}>
         <h1 style={styles.title}>Crie sua Conta</h1>
+
+        {/* Seleção de Tipo de Conta */}
+        <div style={styles.radioGroup}>
+          <label>
+            <input
+              type="radio"
+              name="tipoUsuario"
+              value="consumidor"
+              checked={tipoUsuario === 'consumidor'}
+              onChange={(e) => setTipoUsuario(e.target.value)}
+            />
+            Sou Consumidor
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="tipoUsuario"
+              value="vendedor"
+              checked={tipoUsuario === 'vendedor'}
+              onChange={(e) => setTipoUsuario(e.target.value)}
+            />
+            Sou Vendedor
+          </label>
+        </div>
+
         <form onSubmit={handleSubmit}>
+          {/* Campo condicional para Nome do Negócio */}
+          {tipoUsuario === 'vendedor' && (
+            <input
+              type="text"
+              placeholder="Nome do Sítio ou Negócio"
+              value={nomeNegocio}
+              onChange={(e) => setNomeNegocio(e.target.value)}
+              required
+              style={styles.input}
+            />
+          )}
+
           <input
             type="text"
             placeholder="Nome Completo"

@@ -21,14 +21,16 @@ model Categoria {
 }
 
 model Endereco {
-  id         BigInt   @id @default(autoincrement())
-  usuarioId  BigInt   @map("usuario_id")
-  logradouro String   @db.VarChar(255)
-  numero     String?  @db.VarChar(20)
-  bairro     String   @db.VarChar(100)
-  cidade     String   @default("União da Vitória") @db.VarChar(100)
-  cep        String   @db.VarChar(9)
-  referencia String?
+  id            BigInt    @id @default(autoincrement())
+  usuarioId     BigInt    @map("usuario_id")
+  logradouro    String    @db.VarChar(255)
+  numero        String?   @db.VarChar(20)
+  bairro        String    @db.VarChar(100)
+  cidade        String    @db.VarChar(100)
+  estado        String    @db.VarChar(2)
+  cep           String    @db.VarChar(9)
+  referencia    String?
+  tipoEndereco  String    @map("tipo_endereco")
 
   usuario Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   pedidos Pedido[]
@@ -59,7 +61,7 @@ model Pedido {
   valorTotal        Decimal?  @map("valor_total") @db.Decimal(10, 2)
   statusPedido      String    @map("status_pedido") @default("pendente") @db.VarChar(50)
   criadoEm          DateTime? @map("criado_em") @default(now()) @db.Timestamptz(6)
-  atualizadoEm      DateTime? @map("atualizado_em") @default(now()) @db.Timestamptz(6)
+  atualizadoEm      DateTime? @map("atualizado_em") @updatedAt @db.Timestamptz(6)
 
   consumidor      Usuario  @relation("PedidosDoConsumidor", fields: [consumidorId], references: [id], onDelete: Restrict)
   enderecoEntrega Endereco @relation(fields: [enderecoEntregaId], references: [id], onDelete: Restrict)
@@ -76,13 +78,13 @@ model Produto {
   categoriaId   Int?      @map("categoria_id")
   nome          String    @db.VarChar(255)
   descricao     String?
-  imagemUrl     String?   @map("imagem_url")
+  imagemUrl     String?   @map("imagem_url") // <-- CAMPO ADICIONADO/CONFIRMADO
   preco         Decimal   @db.Decimal(10, 2)
   unidadeMedida String    @map("unidade_medida") @db.VarChar(20)
   estoque       Int?
   ativo         Boolean?  @default(true)
   criadoEm      DateTime? @map("criado_em") @default(now()) @db.Timestamptz(6)
-  atualizadoEm  DateTime? @map("atualizado_em") @default(now()) @db.Timestamptz(6)
+  atualizadoEm  DateTime? @map("atualizado_em") @updatedAt @db.Timestamptz(6) // <-- MELHORIA: usa @updatedAt
 
   vendedor    Usuario    @relation("ProdutosDoVendedor", fields: [vendedorId], references: [id], onDelete: Cascade)
   categoria   Categoria? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
@@ -92,6 +94,8 @@ model Produto {
   @@index([vendedorId])
   @@map("produtos")
 }
+
+// Em prisma/schema.prisma
 
 model Usuario {
   id               BigInt    @id @default(autoincrement())
@@ -103,8 +107,9 @@ model Usuario {
   tipoUsuario      String    @map("tipo_usuario") @db.VarChar(20)
   nomeNegocio      String?   @map("nome_negocio") @db.VarChar(255)
   descricaoNegocio String?   @map("descricao_negocio")
+  logoUrl          String?   @map("logo_url") // <-- NOVO CAMPO ADICIONADO AQUI
   criadoEm         DateTime? @map("criado_em") @default(now()) @db.Timestamptz(6)
-  atualizadoEm     DateTime? @map("atualizado_em") @default(now()) @db.Timestamptz(6)
+  atualizadoEm     DateTime? @map("atualizado_em") @updatedAt @db.Timestamptz(6)
 
   enderecos Endereco[]
   pedidos   Pedido[]  @relation("PedidosDoConsumidor")
