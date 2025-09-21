@@ -1,6 +1,8 @@
 {
-  "/minhas-vendas/page": "app/minhas-vendas/page.js",
+  "/produtores/[id]/page": "app/produtores/[id]/page.js",
+  "/api/produtores/[id]/route": "app/api/produtores/[id]/route.js",
   "/api/auth/me/route": "app/api/auth/me/route.js",
-  "/api/vendas/route": "app/api/vendas/route.js",
-  "/api/pedidos/[id]/route": "app/api/pedidos/[id]/route.js"
+  "/loja/page": "app/loja/page.js",
+  "/api/produtos/route": "app/api/produtos/route.js",
+  "/page": "app/page.js"
 }
