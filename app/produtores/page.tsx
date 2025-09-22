@@ -1,9 +1,6 @@
-// Caminho: app/produtores/page.tsx
-
 import Link from 'next/link';
-import prisma from '@/lib/prisma'; // Vamos buscar os dados diretamente
+import prisma from '@/lib/prisma';
 
-// Interface para garantir o tipo dos nossos dados
 interface Produtor {
   id: string;
   nomeNegocio: string | null;
@@ -11,7 +8,6 @@ interface Produtor {
   logoUrl: string | null;
 }
 
-// Função assíncrona para buscar os dados no servidor
 async function getProdutores(): Promise<Produtor[]> {
   try {
     const produtores = await prisma.usuario.findMany({
@@ -25,15 +21,13 @@ async function getProdutores(): Promise<Produtor[]> {
       orderBy: { nomeNegocio: 'asc' },
     });
 
-    // Converte o BigInt 'id' para string
     return produtores.map(p => ({ ...p, id: p.id.toString() }));
   } catch (error) {
     console.error("Erro ao buscar produtores:", error);
-    return []; // Retorna uma lista vazia em caso de erro
+    return [];
   }
 }
 
-// A página agora é um Server Component (não tem 'use client')
 export default async function ProdutoresPage() {
   const produtores = await getProdutores();
 
