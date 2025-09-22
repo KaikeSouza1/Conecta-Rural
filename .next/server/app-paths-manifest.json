@@ -1,8 +1,8 @@
 {
-  "/loja/page": "app/loja/page.js",
   "/page": "app/page.js",
-  "/api/produtos/route": "app/api/produtos/route.js",
-  "/produtores/page": "app/produtores/page.js",
   "/api/stats/route": "app/api/stats/route.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/produtores/page": "app/produtores/page.js",
+  "/api/produtos/route": "app/api/produtos/route.js",
   "/api/produtores/route": "app/api/produtores/route.js"
 }
