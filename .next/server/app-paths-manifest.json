@@ -1,16 +1,14 @@
 {
-  "/api/auth/login/route": "app/api/auth/login/route.js",
-  "/login/page": "app/login/page.js",
-  "/api/auth/me/route": "app/api/auth/me/route.js",
-  "/page": "app/page.js",
   "/api/produtos/route": "app/api/produtos/route.js",
-  "/api/stats/route": "app/api/stats/route.js",
+  "/meus-pedidos/page": "app/meus-pedidos/page.js",
+  "/meu-perfil/page": "app/meu-perfil/page.js",
+  "/api/enderecos/route": "app/api/enderecos/route.js",
+  "/loja/page": "app/loja/page.js",
   "/produtos/[id]/page": "app/produtos/[id]/page.js",
   "/api/produtos/[id]/route": "app/api/produtos/[id]/route.js",
   "/carrinho/page": "app/carrinho/page.js",
   "/api/pedidos/route": "app/api/pedidos/route.js",
-  "/meus-pedidos/page": "app/meus-pedidos/page.js",
   "/api/pedidos/meus/route": "app/api/pedidos/meus/route.js",
-  "/minhas-vendas/page": "app/minhas-vendas/page.js",
-  "/api/vendas/route": "app/api/vendas/route.js"
+  "/page": "app/page.js",
+  "/api/stats/route": "app/api/stats/route.js"
 }
