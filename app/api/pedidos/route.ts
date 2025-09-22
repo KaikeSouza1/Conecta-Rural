@@ -11,7 +11,6 @@ interface CartItem {
   id: string;
   quantidade: number;
   preco: string;
-  // Precisamos saber o vendedor de cada item
   produto: {
     vendedorId: string;
   };
@@ -30,10 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'O carrinho está vazio.' }, { status: 400 });
     }
 
-    // 1. Organiza os itens do carrinho em um mapa, agrupados por vendedorId
     const pedidosPorVendedor = new Map<string, CartItem[]>();
-
-    // Precisamos buscar os detalhes dos produtos para ter certeza do vendedorId
     const idsProdutos = cartItems.map(item => BigInt(item.id));
     const produtosDoBanco = await prisma.produto.findMany({
         where: { id: { in: idsProdutos } },
@@ -51,14 +47,12 @@ export async function POST(request: NextRequest) {
         }
     }
     
-    // 2. Inicia uma transação para criar todos os pedidos de uma vez
     const pedidosCriados = await prisma.$transaction(async (tx) => {
       const endereco = await tx.endereco.findFirst({ where: { usuarioId } });
       if (!endereco) throw new Error('Nenhum endereço de entrega cadastrado.');
 
       const arrayDePedidos = [];
 
-      // 3. Itera sobre cada grupo de vendedor para criar um pedido separado
       for (const [vendedorId, itensDoVendedor] of pedidosPorVendedor.entries()) {
         const valorTotalProdutos = itensDoVendedor.reduce((acc, item) => acc + (parseFloat(item.preco) * item.quantidade), 0);
         
@@ -67,7 +61,7 @@ export async function POST(request: NextRequest) {
             consumidorId: usuarioId,
             enderecoEntregaId: endereco.id,
             valorProdutos: valorTotalProdutos,
-            valorTotal: valorTotalProdutos, // Simplificado, pode incluir frete no futuro
+            valorTotal: valorTotalProdutos,
             statusPedido: 'processando',
           },
         });
@@ -95,9 +89,18 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Erro ao criar pedido:', error);
-    if (error.message.includes('Nenhum endereço de entrega cadastrado')) {
+
+    const errorMessage = error.message || '';
+
+    if (errorMessage.includes('Nenhum endereço de entrega cadastrado')) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+    
+    if (errorMessage.includes('Estoque insuficiente')) {
+        const friendlyMessage = errorMessage.split('CONTEXT:')[0].split('DETAIL:')[0].replace(/ERROR:|ERRO:/g, '').trim();
+        return NextResponse.json({ error: friendlyMessage }, { status: 409 }); // 409 Conflict é um bom status para isso
+    }
+
     return NextResponse.json({ error: 'Não foi possível processar o pedido.' }, { status: 500 });
   }
 }

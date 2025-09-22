@@ -16,16 +16,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/login/page.js"
     ],
-    "/meus-pedidos/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/meus-pedidos/page.js"
-    ],
-    "/meu-perfil/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/meu-perfil/page.js"
-    ],
     "/loja/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
