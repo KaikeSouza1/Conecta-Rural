@@ -5,6 +5,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+// ADICIONADO AQUI: Força a página a ser sempre dinâmica
+export const dynamic = 'force-dynamic';
+
 interface Produtor {
   id: string;
   nomeNegocio: string | null;
@@ -64,7 +67,6 @@ export default function ProdutoresPage() {
                 <h2 className="text-xl font-bold text-gray-800">{produtor.nomeNegocio}</h2>
                 <p className="mt-2 text-gray-600 text-sm h-20 overflow-hidden">{produtor.descricaoNegocio || 'Produtor local de União da Vitória.'}</p>
                 <div className="mt-4">
-                  {/* Este link ainda não vai funcionar, mas já deixaremos preparado */}
                   <Link href={`/produtores/${produtor.id}`} className="font-semibold text-emerald-600 hover:text-emerald-500">
                     Ver produtos &rarr;
                   </Link>
