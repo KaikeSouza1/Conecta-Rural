@@ -1,5 +1,3 @@
-// Caminho: app/api/produtos/[id]/route.ts
-
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -7,7 +5,6 @@ import { jwtVerify } from 'jose';
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 
-// --- BUSCAR UM PRODUTO ESPECÍFICO (GET) - CORRIGIDO ---
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -16,10 +13,10 @@ export async function GET(
     const id = BigInt(params.id);
     const produto = await prisma.produto.findUnique({
       where: { id },
-      // A CORREÇÃO ESTÁ AQUI:
       include: {
         vendedor: {
           select: {
+            id: true,
             nomeNegocio: true,
           },
         },
@@ -36,6 +33,10 @@ export async function GET(
       vendedorId: produto.vendedorId.toString(),
       categoriaId: produto.categoriaId?.toString() ?? null,
       preco: produto.preco.toString(),
+      vendedor: {
+        ...produto.vendedor,
+        id: produto.vendedor.id.toString(),
+      },
     };
 
     return NextResponse.json(produtoSeguro);
@@ -44,7 +45,6 @@ export async function GET(
   }
 }
 
-// --- ATUALIZAR UM PRODUTO (PUT) ---
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -59,7 +59,7 @@ export async function PUT(
     
     const produto = await prisma.produto.findUnique({ where: { id } });
     if (!produto) return NextResponse.json({ error: 'Produto não encontrado.' }, { status: 404 });
-    if (produto.vendedorId !== usuarioId) return NextResponse.json({ error: 'Você não tem permissão para editar este produto.' }, { status: 403 });
+    if (produto.vendedorId !== usuarioId) return NextResponse.json({ error: 'Você не tem permissão para editar este produto.' }, { status: 403 });
 
     const body = await request.json();
     const { nome, descricao, preco, unidade_medida, estoque, ativo } = body;
@@ -69,7 +69,13 @@ export async function PUT(
       data: { nome, descricao, preco, unidadeMedida: unidade_medida, estoque, ativo },
     });
     
-    const produtoSeguro = { ...produtoAtualizado, id: produtoAtualizado.id.toString(), vendedorId: produtoAtualizado.vendedorId.toString(), categoriaId: produtoAtualizado.categoriaId?.toString() ?? null, preco: produtoAtualizado.preco.toString() };
+    const produtoSeguro = { 
+        ...produtoAtualizado, 
+        id: produtoAtualizado.id.toString(), 
+        vendedorId: produtoAtualizado.vendedorId.toString(), 
+        categoriaId: produtoAtualizado.categoriaId?.toString() ?? null, 
+        preco: produtoAtualizado.preco.toString() 
+    };
     return NextResponse.json(produtoSeguro);
   } catch (error) {
     console.error("Erro ao atualizar produto:", error);
@@ -77,7 +83,6 @@ export async function PUT(
   }
 }
 
-// --- DELETAR UM PRODUTO (DELETE) ---
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -105,7 +110,6 @@ export async function DELETE(
   }
 }
 
-// --- ALTERAR STATUS (PATCH) ---
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -127,7 +131,13 @@ export async function PATCH(
         data: { ativo: !produto.ativo },
       });
       
-      const produtoSeguro = { ...produtoAtualizado, id: produtoAtualizado.id.toString(), vendedorId: produtoAtualizado.vendedorId.toString(), categoriaId: produtoAtualizado.categoriaId?.toString() ?? null, preco: produtoAtualizado.preco.toString() };
+      const produtoSeguro = { 
+          ...produtoAtualizado, 
+          id: produtoAtualizado.id.toString(), 
+          vendedorId: produtoAtualizado.vendedorId.toString(), 
+          categoriaId: produtoAtualizado.categoriaId?.toString() ?? null, 
+          preco: produtoAtualizado.preco.toString() 
+      };
       return NextResponse.json(produtoSeguro);
     } catch (error) {
       console.error("Erro ao alterar status do produto:", error);

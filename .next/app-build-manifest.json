@@ -11,6 +11,21 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
+    "/loja/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/loja/page.js"
+    ],
+    "/produtos/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/produtos/[id]/page.js"
+    ],
+    "/produtores/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/produtores/[id]/page.js"
+    ],
     "/produtores/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",

@@ -7,10 +7,9 @@ import { jwtVerify } from 'jose';
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 
-// As funções GET, PUT, DELETE continuam aqui, sem alterações...
-// (Para manter a resposta limpa, omiti elas, mas elas devem continuar no seu arquivo)
+// As funções GET, PUT, e DELETE que já fizemos antes devem estar aqui.
+// O erro está na função PATCH, então vamos focar nela.
 
-// --- ATUALIZAR STATUS DO PEDIDO (PATCH) ---
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
     try {
       const token = request.headers.get('authorization')?.split(' ')[1];
@@ -52,7 +51,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         data: { statusPedido: status },
       });
       
-      // A CORREÇÃO ESTÁ AQUI: Convertendo os campos BigInt/Decimal para string
+      // A CORREÇÃO ESTÁ AQUI: Convertendo os campos para string antes de retornar
       const pedidoSeguro = { 
         ...pedidoAtualizado, 
         id: pedidoAtualizado.id.toString(),
