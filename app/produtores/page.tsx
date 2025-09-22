@@ -1,13 +1,9 @@
 // Caminho: app/produtores/page.tsx
 
-'use client';
-
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import prisma from '@/lib/prisma'; // Vamos buscar os dados diretamente
 
-// ADICIONADO AQUI: Força a página a ser sempre dinâmica
-export const dynamic = 'force-dynamic';
-
+// Interface para garantir o tipo dos nossos dados
 interface Produtor {
   id: string;
   nomeNegocio: string | null;
@@ -15,35 +11,31 @@ interface Produtor {
   logoUrl: string | null;
 }
 
-export default function ProdutoresPage() {
-  const [produtores, setProdutores] = useState<Produtor[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+// Função assíncrona para buscar os dados no servidor
+async function getProdutores(): Promise<Produtor[]> {
+  try {
+    const produtores = await prisma.usuario.findMany({
+      where: { tipoUsuario: 'vendedor' },
+      select: {
+        id: true,
+        nomeNegocio: true,
+        descricaoNegocio: true,
+        logoUrl: true,
+      },
+      orderBy: { nomeNegocio: 'asc' },
+    });
 
-  useEffect(() => {
-    async function fetchProdutores() {
-      try {
-        const response = await fetch('/api/produtores');
-        if (!response.ok) {
-          throw new Error('Falha ao buscar a lista de produtores.');
-        }
-        const data = await response.json();
-        setProdutores(data);
-      } catch (err) {
-        setError('Não foi possível carregar os produtores.');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchProdutores();
-  }, []);
+    // Converte o BigInt 'id' para string
+    return produtores.map(p => ({ ...p, id: p.id.toString() }));
+  } catch (error) {
+    console.error("Erro ao buscar produtores:", error);
+    return []; // Retorna uma lista vazia em caso de erro
+  }
+}
 
-  if (isLoading) {
-    return <div className="text-center py-10">Carregando produtores...</div>;
-  }
-  if (error) {
-    return <div className="text-center py-10 text-red-600">{error}</div>;
-  }
+// A página agora é um Server Component (não tem 'use client')
+export default async function ProdutoresPage() {
+  const produtores = await getProdutores();
 
   return (
     <div className="bg-white">
@@ -74,7 +66,7 @@ export default function ProdutoresPage() {
               </div>
             ))
           ) : (
-            <p>Nenhum produtor cadastrado no momento.</p>
+            <p className="col-span-full text-center text-gray-500">Nenhum produtor cadastrado no momento.</p>
           )}
         </div>
       </div>
