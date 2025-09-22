@@ -7,10 +7,20 @@ import { jwtVerify } from 'jose';
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 
+// Dentro de app/api/produtos/route.ts
+
 export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const categoriaId = searchParams.get('categoriaId');
+
+    const whereCondition: any = { ativo: true };
+    if (categoriaId) {
+      whereCondition.categoriaId = parseInt(categoriaId);
+    }
+
     const produtos = await prisma.produto.findMany({
-      where: { ativo: true },
+      where: whereCondition,
       include: {
         vendedor: {
           select: { nomeNegocio: true },
@@ -37,7 +47,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const token = request.headers.get('authorization')?.split(' ')[1];
-
     if (!token) {
       return NextResponse.json({ error: 'Token não fornecido.' }, { status: 401 });
     }
@@ -51,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { nome, descricao, preco, unidade_medida, estoque, imagem_url } = body;
+    const { nome, descricao, preco, unidade_medida, estoque, imagem_url, categoria_id } = body;
     
     if (!nome || preco === undefined || !unidade_medida) {
         return NextResponse.json({ error: 'Nome, preço e unidade de medida são obrigatórios.'}, { status: 400 });
@@ -66,6 +75,7 @@ export async function POST(request: NextRequest) {
         estoque,
         imagemUrl: imagem_url,
         vendedorId: BigInt(usuarioId),
+        categoriaId: categoria_id,
       },
     });
 

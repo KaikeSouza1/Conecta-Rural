@@ -3,7 +3,6 @@
 
 import Link from 'next/link';
 
-// Definimos os tipos de dados que este componente espera receber
 interface Vendedor {
   nomeNegocio: string | null;
 }
@@ -16,7 +15,6 @@ interface Produto {
   imagemUrl: string | null;
 }
 
-// O componente recebe um 'produto' como propriedade
 export function ProductCard({ produto }: { produto: Produto }) {
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl">

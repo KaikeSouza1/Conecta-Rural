@@ -8,66 +8,60 @@ import { useAuth } from '@/contexts/AuthContext';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 
-const styles: { [key: string]: React.CSSProperties } = {
-  container: { fontFamily: 'sans-serif', padding: '40px', maxWidth: '800px', margin: 'auto' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  formContainer: { backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '8px', marginTop: '30px' },
-  form: { marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '15px' },
-  inputGroup: { display: 'flex', flexDirection: 'column' },
-  label: { marginBottom: '5px', fontWeight: 'bold', color: '#333' },
-  input: { padding: '10px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '1rem' },
-  button: { padding: '12px 15px', cursor: 'pointer', backgroundColor: '#059669', color: 'white', border: 'none', borderRadius: '5px', fontSize: '1rem', fontWeight: 'bold' },
-  message: { textAlign: 'center', padding: '10px', borderRadius: '5px', margin: '10px 0' },
-};
+interface Categoria {
+  id: number;
+  nome: string;
+}
 
 export default function EditarProdutoPage() {
-  const { user, isAuthLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const id = params.id as string; // Pega o ID da URL
+  const id = params.id as string;
 
+  // Estados do formulário
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
   const [preco, setPreco] = useState('');
   const [unidadeMedida, setUnidadeMedida] = useState('unidade');
   const [estoque, setEstoque] = useState('');
   const [ativo, setAtivo] = useState(true);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [categoriaId, setCategoriaId] = useState<string | number>('');
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const fetchProduto = useCallback(async () => {
-    if (!id) return;
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/produtos/${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        // Preenche o formulário com os dados recebidos da API
-        setNome(data.nome);
-        setDescricao(data.descricao || '');
-        setPreco(data.preco);
-        setUnidadeMedida(data.unidadeMedida);
-        setEstoque(data.estoque?.toString() || '');
-        setAtivo(data.ativo);
-      } else {
-        setError('Produto não encontrado ou falha ao carregar.');
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const catResponse = await fetch('/api/categorias');
+        if (catResponse.ok) setCategorias(await catResponse.json());
+
+        const prodResponse = await fetch(`/api/produtos/${id}`);
+        if (prodResponse.ok) {
+          const data = await prodResponse.json();
+          setNome(data.nome);
+          setDescricao(data.descricao || '');
+          setPreco(data.preco);
+          setUnidadeMedida(data.unidadeMedida);
+          setEstoque(data.estoque?.toString() || '');
+          setAtivo(data.ativo);
+          setCategoriaId(data.categoriaId || '');
+        } else {
+          setError('Produto não encontrado.');
+        }
+      } catch (err) {
+        setError('Erro de rede ao carregar dados.');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      setError('Erro de rede ao buscar dados do produto.');
-    } finally {
-      setIsLoading(false);
+    }
+    if (id) {
+      fetchData();
     }
   }, [id]);
-
-  useEffect(() => {
-    // Apenas busca os dados se o ID estiver disponível
-    if (id) {
-      fetchProduto();
-    }
-  }, [id, fetchProduto]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -87,6 +81,7 @@ export default function EditarProdutoPage() {
           unidade_medida: unidadeMedida,
           estoque: parseInt(estoque, 10),
           ativo,
+          categoria_id: categoriaId ? parseInt(String(categoriaId), 10) : null,
         }),
       });
       const data = await response.json();
@@ -103,30 +98,60 @@ export default function EditarProdutoPage() {
     }
   }
 
-  if (isLoading) return <p>Carregando dados do produto...</p>;
+  if (isLoading) return <p className="text-center py-10">Carregando produto...</p>;
 
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
-        <h1>Editar Produto: {nome || '...'}</h1>
-        <Link href="/meus-produtos" style={{ color: 'blue' }}>Voltar para a lista</Link>
-      </header>
-      <hr style={{ margin: '20px 0' }} />
-      <div style={styles.formContainer}>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.inputGroup}><label style={styles.label}>Nome do Produto:</label><input type="text" value={nome} onChange={(e) => setNome(e.target.value)} required style={styles.input} /></div>
-          <div style={styles.inputGroup}><label style={styles.label}>Descrição:</label><textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} style={{...styles.input, minHeight: '80px' }} /></div>
-          <div style={styles.inputGroup}><label style={styles.label}>Preço (R$):</label><input type="number" step="0.01" value={preco} onChange={(e) => setPreco(e.target.value)} required style={styles.input} /></div>
-          <div style={styles.inputGroup}><label style={styles.label}>Unidade de Medida:</label><select value={unidadeMedida} onChange={(e) => setUnidadeMedida(e.target.value)} required style={styles.input}><option value="unidade">Unidade</option><option value="kg">Kg</option><option value="litro">Litro</option><option value="duzia">Dúzia</option><option value="bandeja">Bandeja</option></select></div>
-          <div style={styles.inputGroup}><label style={styles.label}>Estoque (unidades):</label><input type="number" step="1" value={estoque} onChange={(e) => setEstoque(e.target.value)} required style={styles.input} /></div>
-          <div style={styles.inputGroup}><label style={{ display: 'flex', alignItems: 'center' }}><input type="checkbox" checked={ativo} onChange={(e) => setAtivo(e.target.checked)} style={{ marginRight: '10px' }} /> Produto Ativo na loja</label></div>
-          
-          {error && <p style={{...styles.message, backgroundColor: '#fee2e2', color: '#b91c1c'}}>{error}</p>}
-          {success && <p style={{...styles.message, backgroundColor: '#dcfce7', color: '#166534'}}>{success}</p>}
-
-          <button type="submit" disabled={isSubmitting} style={styles.button}>
-            {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
-          </button>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-2xl mx-auto">
+        <header className="pb-8 border-b border-gray-200">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900">Editar Produto</h1>
+        </header>
+        <form onSubmit={handleSubmit} className="mt-12 space-y-6">
+          <div>
+            <label htmlFor="nome" className="block text-sm font-medium text-gray-700">Nome do Produto</label>
+            <input type="text" id="nome" value={nome} onChange={(e) => setNome(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300"/>
+          </div>
+          <div>
+            <label htmlFor="categoria" className="block text-sm font-medium text-gray-700">Categoria</label>
+            <select id="categoria" value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300">
+              <option value="">Selecione uma categoria</option>
+              {categorias.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.nome}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="descricao" className="block text-sm font-medium text-gray-700">Descrição</label>
+            <textarea id="descricao" value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={4} className="mt-1 block w-full rounded-md border-gray-300"/>
+          </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+              <label htmlFor="preco" className="block text-sm font-medium text-gray-700">Preço (R$)</label>
+              <input type="number" id="preco" step="0.01" value={preco} onChange={(e) => setPreco(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300"/>
+            </div>
+            <div>
+              <label htmlFor="unidadeMedida" className="block text-sm font-medium text-gray-700">Unidade</label>
+              <select id="unidadeMedida" value={unidadeMedida} onChange={(e) => setUnidadeMedida(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300">
+                <option value="unidade">Unidade</option><option value="kg">Kg</option><option value="litro">Litro</option><option value="duzia">Dúzia</option><option value="bandeja">Bandeja</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="estoque" className="block text-sm font-medium text-gray-700">Estoque</label>
+            <input type="number" id="estoque" step="1" value={estoque} onChange={(e) => setEstoque(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300"/>
+          </div>
+          <div className="flex items-center">
+            <input id="ativo" type="checkbox" checked={ativo} onChange={(e) => setAtivo(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-emerald-600"/>
+            <label htmlFor="ativo" className="ml-2 block text-sm text-gray-900">Produto Ativo</label>
+          </div>
+          <div className="flex justify-end gap-3 pt-5 border-t">
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            {success && <p className="text-sm text-green-600">{success}</p>}
+            <Link href="/meus-produtos" className="rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Cancelar</Link>
+            <button type="submit" disabled={isSubmitting} className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700">
+              {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+            </button>
+          </div>
         </form>
       </div>
     </div>

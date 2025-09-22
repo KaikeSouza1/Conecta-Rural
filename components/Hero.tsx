@@ -1,6 +1,6 @@
 // Caminho: components/Hero.tsx
 
-'use client'; // Necessário para usar o hook useAuth
+'use client'; 
 
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext'; // 1. Importar o hook de autenticação

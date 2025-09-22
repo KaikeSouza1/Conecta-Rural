@@ -25,7 +25,7 @@ model Endereco {
   usuarioId     BigInt    @map("usuario_id")
   logradouro    String    @db.VarChar(255)
   numero        String?   @db.VarChar(20)
-  complemento   String?   // <-- CAMPO ADICIONADO AQUI
+  complemento   String?
   bairro        String    @db.VarChar(100)
   cidade        String    @db.VarChar(100)
   estado        String    @db.VarChar(2)
@@ -60,7 +60,7 @@ model Pedido {
   valorEntrega      Decimal?  @map("valor_entrega") @default(0.00) @db.Decimal(10, 2)
   valorComissao     Decimal?  @map("valor_comissao") @db.Decimal(10, 2)
   valorTotal        Decimal?  @map("valor_total") @db.Decimal(10, 2)
-  statusPedido      String    @map("status_pedido") @default("pendente") @db.VarChar(50)
+  statusPedido      String    @map("status_pedido") @default("processando") @db.VarChar(50)
   criadoEm          DateTime? @map("criado_em") @default(now()) @db.Timestamptz(6)
   atualizadoEm      DateTime? @map("atualizado_em") @updatedAt @db.Timestamptz(6)
 
@@ -76,27 +76,26 @@ model Pedido {
 model Produto {
   id            BigInt    @id @default(autoincrement())
   vendedorId    BigInt    @map("vendedor_id")
-  categoriaId   Int?      @map("categoria_id")
   nome          String    @db.VarChar(255)
   descricao     String?
-  imagemUrl     String?   @map("imagem_url") // <-- CAMPO ADICIONADO/CONFIRMADO
+  imagemUrl     String?   @map("imagem_url")
   preco         Decimal   @db.Decimal(10, 2)
   unidadeMedida String    @map("unidade_medida") @db.VarChar(20)
   estoque       Int?
   ativo         Boolean?  @default(true)
   criadoEm      DateTime? @map("criado_em") @default(now()) @db.Timestamptz(6)
-  atualizadoEm  DateTime? @map("atualizado_em") @updatedAt @db.Timestamptz(6) // <-- MELHORIA: usa @updatedAt
+  atualizadoEm  DateTime? @map("atualizado_em") @updatedAt @db.Timestamptz(6)
+
+  // RELACIONAMENTO COM CATEGORIA ADICIONADO
+  categoriaId   Int?      @map("categoria_id")
+  categoria     Categoria? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
 
   vendedor    Usuario    @relation("ProdutosDoVendedor", fields: [vendedorId], references: [id], onDelete: Cascade)
-  categoria   Categoria? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
   itensPedido ItemPedido[]
 
-  @@index([categoriaId])
   @@index([vendedorId])
   @@map("produtos")
 }
-
-// Em prisma/schema.prisma
 
 model Usuario {
   id               BigInt    @id @default(autoincrement())
@@ -108,7 +107,7 @@ model Usuario {
   tipoUsuario      String    @map("tipo_usuario") @db.VarChar(20)
   nomeNegocio      String?   @map("nome_negocio") @db.VarChar(255)
   descricaoNegocio String?   @map("descricao_negocio")
-  logoUrl          String?   @map("logo_url") // <-- NOVO CAMPO ADICIONADO AQUI
+  logoUrl          String?   @map("logo_url")
   criadoEm         DateTime? @map("criado_em") @default(now()) @db.Timestamptz(6)
   atualizadoEm     DateTime? @map("atualizado_em") @updatedAt @db.Timestamptz(6)
 

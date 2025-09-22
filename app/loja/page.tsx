@@ -2,62 +2,59 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { ProductCard } from '@/components/ProductCard'; // Importa nosso novo componente
+import { useEffect, useState, useCallback } from 'react';
+import { ProductCard } from '@/components/ProductCard';
 
 // Tipos de dados
-interface Vendedor {
-  nomeNegocio: string | null;
-}
-interface Produto {
-  id: string;
+interface Categoria {
+  id: number;
   nome: string;
-  preco: string;
-  unidadeMedida: string;
-  vendedor: Vendedor;
-  imagemUrl: string | null;
 }
+interface Produto { /* ... (interface existente) */ id: string; nome: string; preco: string; unidadeMedida: string; imagemUrl: string | null; vendedor: { nomeNegocio: string | null; }; }
 
 export default function LojaPage() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchProdutos() {
-      try {
-        const response = await fetch('/api/produtos');
-        if (!response.ok) {
-          throw new Error('Falha ao buscar produtos.');
-        }
-        const data = await response.json();
-        setProdutos(data);
-      } catch (err) {
-        setError('Não foi possível carregar os produtos. Tente novamente mais tarde.');
-      } finally {
-        setIsLoading(false);
-      }
+  // Função para buscar os produtos, agora com filtro opcional
+  const fetchProdutos = useCallback(async (catId: number | null) => {
+    setIsLoading(true);
+    let url = '/api/produtos';
+    if (catId) {
+      url += `?categoriaId=${catId}`;
     }
-
-    fetchProdutos();
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Falha ao buscar produtos.');
+      setProdutos(await response.json());
+    } catch (err) {
+      setError('Não foi possível carregar os produtos.');
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-6 py-8 text-center">
-        <p className="text-gray-600">Carregando produtos...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-6 py-8 text-center">
-        <p className="text-red-600">{error}</p>
-      </div>
-    );
-  }
+  // Busca as categorias e os produtos iniciais
+  useEffect(() => {
+    async function fetchInitialData() {
+      try {
+        const catResponse = await fetch('/api/categorias');
+        if (catResponse.ok) setCategorias(await catResponse.json());
+      } catch (error) {
+        console.error("Falha ao carregar categorias", error);
+      }
+      fetchProdutos(null); // Carrega todos os produtos inicialmente
+    }
+    fetchInitialData();
+  }, [fetchProdutos]);
+  
+  const handleCategoryClick = (catId: number | null) => {
+    setCategoriaSelecionada(catId);
+    fetchProdutos(catId);
+  };
 
   return (
     <div className="bg-white">
@@ -69,15 +66,40 @@ export default function LojaPage() {
           </p>
         </div>
 
+        {/* SEÇÃO DE FILTROS DE CATEGORIA */}
+        <div className="pt-8 flex flex-wrap gap-2">
+          <button
+            onClick={() => handleCategoryClick(null)}
+            className={`px-4 py-2 text-sm font-medium rounded-full ${categoriaSelecionada === null ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+          >
+            Todos
+          </button>
+          {categorias.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => handleCategoryClick(cat.id)}
+              className={`px-4 py-2 text-sm font-medium rounded-full ${categoriaSelecionada === cat.id ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+            >
+              {cat.nome}
+            </button>
+          ))}
+        </div>
+
         <div className="pt-12">
-          {produtos.length > 0 ? (
-            <div className="grid grid-cols-1 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
-              {produtos.map((produto) => (
-                <ProductCard key={produto.id} produto={produto} />
-              ))}
-            </div>
+          {isLoading ? (
+            <p className="text-center text-gray-600">Carregando...</p>
+          ) : error ? (
+            <p className="text-center text-red-600">{error}</p>
           ) : (
-            <p className="text-center text-gray-600">Nenhum produto cadastrado no momento. Volte em breve!</p>
+            <div className="grid grid-cols-1 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+              {produtos.length > 0 ? (
+                produtos.map((produto) => (
+                  <ProductCard key={produto.id} produto={produto} />
+                ))
+              ) : (
+                <p className="col-span-full text-center text-gray-500">Nenhum produto encontrado nesta categoria.</p>
+              )}
+            </div>
           )}
         </div>
       </div>

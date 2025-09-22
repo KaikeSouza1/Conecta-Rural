@@ -45,6 +45,7 @@ export async function GET(
   }
 }
 
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -59,23 +60,25 @@ export async function PUT(
     
     const produto = await prisma.produto.findUnique({ where: { id } });
     if (!produto) return NextResponse.json({ error: 'Produto não encontrado.' }, { status: 404 });
-    if (produto.vendedorId !== usuarioId) return NextResponse.json({ error: 'Você не tem permissão para editar este produto.' }, { status: 403 });
+    if (produto.vendedorId !== usuarioId) return NextResponse.json({ error: 'Você não tem permissão para editar este produto.' }, { status: 403 });
 
     const body = await request.json();
-    const { nome, descricao, preco, unidade_medida, estoque, ativo } = body;
+    const { nome, descricao, preco, unidade_medida, estoque, ativo, categoria_id } = body;
 
     const produtoAtualizado = await prisma.produto.update({
       where: { id },
-      data: { nome, descricao, preco, unidadeMedida: unidade_medida, estoque, ativo },
+      data: { 
+        nome, 
+        descricao, 
+        preco, 
+        unidadeMedida: unidade_medida, 
+        estoque, 
+        ativo,
+        categoriaId: categoria_id ? parseInt(categoria_id, 10) : null
+      },
     });
     
-    const produtoSeguro = { 
-        ...produtoAtualizado, 
-        id: produtoAtualizado.id.toString(), 
-        vendedorId: produtoAtualizado.vendedorId.toString(), 
-        categoriaId: produtoAtualizado.categoriaId?.toString() ?? null, 
-        preco: produtoAtualizado.preco.toString() 
-    };
+    const produtoSeguro = { ...produtoAtualizado, id: produtoAtualizado.id.toString(), vendedorId: produtoAtualizado.vendedorId.toString(), categoriaId: produtoAtualizado.categoriaId?.toString() ?? null, preco: produtoAtualizado.preco.toString() };
     return NextResponse.json(produtoSeguro);
   } catch (error) {
     console.error("Erro ao atualizar produto:", error);

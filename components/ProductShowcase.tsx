@@ -4,7 +4,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 
-// Tipos para os dados que esperamos da API
 interface Vendedor {
   nomeNegocio: string | null;
 }
@@ -17,7 +16,6 @@ interface Produto {
   imagemUrl: string | null;
 }
 
-// Estilos pré-definidos para as 3 posições dos cards
 const cardStyles = [
   { transform: 'rotate(-6deg) translate(-30%, 5%) scale(0.9)', zIndex: 10, opacity: 0.8, filter: 'brightness(0.9)' },
   { transform: 'rotate(2deg) scale(1)', zIndex: 20, opacity: 1 },
@@ -29,7 +27,6 @@ export function ProductShowcase() {
   const [visibleProdutos, setVisibleProdutos] = useState<Produto[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Efeito para buscar todos os produtos da API
   useEffect(() => {
     async function fetchProdutos() {
       try {
@@ -44,16 +41,11 @@ export function ProductShowcase() {
     fetchProdutos();
   }, []);
 
-  // Efeito para iniciar a vitrine e controlar a animação
   useEffect(() => {
-    // Se não houver produtos, não faz nada
     if (allProdutos.length === 0) return;
-
-    // Define os 3 produtos iniciais para exibir
     const updateVisibleProducts = (startIndex: number) => {
       const newVisible = [];
       for (let i = 0; i < 3; i++) {
-        // O operador de módulo (%) faz a lista ser circular
         const productIndex = (startIndex + i) % allProdutos.length;
         if (allProdutos[productIndex]) {
           newVisible.push(allProdutos[productIndex]);
@@ -65,12 +57,10 @@ export function ProductShowcase() {
     // Define os produtos iniciais
     updateVisibleProducts(currentIndex);
 
-    // Cria o intervalo para trocar os produtos a cada 3 segundos
     const interval = setInterval(() => {
       setCurrentIndex(prevIndex => (prevIndex + 1) % allProdutos.length);
-    }, 3000); // Muda a cada 3 segundos
+    }, 3000);
 
-    // Limpa o intervalo ao sair da página para evitar erros
     return () => clearInterval(interval);
   }, [allProdutos, currentIndex]);
 
@@ -80,7 +70,7 @@ export function ProductShowcase() {
       
       {visibleProdutos.map((produto, index) => (
         <div
-          key={`${produto.id}-${currentIndex}`} // Chave dinâmica para forçar a re-renderização
+          key={`${produto.id}-${currentIndex}`}
           className="absolute w-64 bg-white rounded-lg shadow-2xl p-4 transition-all duration-1000 ease-in-out"
           style={cardStyles[index]}
         >
