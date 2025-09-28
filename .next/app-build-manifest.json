@@ -1,9 +1,9 @@
 {
   "pages": {
-    "/loja/page": [
+    "/carrinho/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/loja/page.js"
+      "static/chunks/app/carrinho/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -11,30 +11,25 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
-    ],
     "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/login/page.js"
     ],
-    "/meus-produtos/page": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/meus-produtos/page.js"
+      "static/chunks/app/page.js"
     ],
-    "/meus-produtos/editar/[id]/page": [
+    "/loja/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/meus-produtos/editar/[id]/page.js"
+      "static/chunks/app/loja/page.js"
     ],
-    "/meus-produtos/novo/page": [
+    "/produtos/[id]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/meus-produtos/novo/page.js"
+      "static/chunks/app/produtos/[id]/page.js"
     ]
   }
 }

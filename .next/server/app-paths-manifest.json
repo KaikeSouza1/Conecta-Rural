@@ -1,9 +1,10 @@
 {
+  "/carrinho/page": "app/carrinho/page.js",
   "/loja/page": "app/loja/page.js",
-  "/login/page": "app/login/page.js",
-  "/meus-produtos/page": "app/meus-produtos/page.js",
-  "/meus-produtos/editar/[id]/page": "app/meus-produtos/editar/[id]/page.js",
-  "/meus-produtos/novo/page": "app/meus-produtos/novo/page.js",
+  "/produtos/[id]/page": "app/produtos/[id]/page.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js",
   "/api/categorias/route": "app/api/categorias/route.js",
-  "/api/produtos/route": "app/api/produtos/route.js"
+  "/api/produtos/route": "app/api/produtos/route.js",
+  "/api/produtos/[id]/route": "app/api/produtos/[id]/route.js",
+  "/api/pagamento/pagseguro/route": "app/api/pagamento/pagseguro/route.js"
 }

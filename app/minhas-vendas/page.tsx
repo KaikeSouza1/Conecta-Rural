@@ -1,5 +1,3 @@
-// Caminho: app/minhas-vendas/page.tsx
-
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -72,8 +70,7 @@ export default function MinhasVendasPage() {
       });
 
       if (response.ok) {
-        // Atualiza a lista de vendas para refletir a mudança
-        fetchVendas();
+        fetchVendas(); // Atualiza a lista de vendas para refletir a mudança
       } else {
         alert('Falha ao atualizar o status do pedido.');
       }
@@ -132,7 +129,7 @@ export default function MinhasVendasPage() {
                   id={`status-${pedido.id}`}
                   value={pedido.statusPedido}
                   onChange={(e) => handleStatusChange(pedido.id, e.target.value)}
-                  className="rounded-md border-gray-300 shadow-sm"
+                  className="rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
                 >
                   <option value="processando">Processando</option>
                   <option value="confirmado">Confirmado</option>

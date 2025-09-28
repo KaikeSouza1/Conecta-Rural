@@ -1,5 +1,3 @@
-// Caminho: app/api/auth/me/route.ts
-
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -10,10 +8,7 @@ const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 export async function GET(request: NextRequest) {
   try {
     const token = request.headers.get('authorization')?.split(' ')[1];
-
-    if (!token) {
-      return NextResponse.json({ error: 'Token não encontrado.' }, { status: 401 });
-    }
+    if (!token) return NextResponse.json({ error: 'Token não encontrado.' }, { status: 401 });
 
     const { payload } = await jwtVerify(token, secret);
     const usuarioId = payload.usuarioId as string;
@@ -25,23 +20,16 @@ export async function GET(request: NextRequest) {
         nomeCompleto: true,
         email: true,
         tipoUsuario: true,
-        nomeNegocio: true, // Adicionado
-        descricaoNegocio: true, // Adicionado
-        logoUrl: true, // Adicionado
+        cpfCnpj: true, // <-- ADICIONADO AQUI
+        nomeNegocio: true,
+        descricaoNegocio: true,
+        logoUrl: true,
       },
     });
 
-    if (!usuario) {
-      return NextResponse.json({ error: 'Usuário do token não encontrado.' }, { status: 404 });
-    }
-    
-    const usuarioSeguro = {
-      ...usuario,
-      id: usuario.id.toString(),
-    };
-
+    if (!usuario) return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
+    const usuarioSeguro = { ...usuario, id: usuario.id.toString() };
     return NextResponse.json(usuarioSeguro);
-
   } catch (error) {
     return NextResponse.json({ error: 'Erro ao buscar dados do usuário.' }, { status: 500 });
   }

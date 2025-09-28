@@ -9,6 +9,7 @@ interface User {
   nomeCompleto: string;
   email: string;
   tipoUsuario: string;
+  cpfCnpj: string;
   nomeNegocio: string | null;
   descricaoNegocio: string | null;
   logoUrl: string | null;
@@ -38,12 +39,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     
+    // Mantemos o 'isAuthLoading' como true até a resposta do fetch
     try {
-      const response = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+      const response = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
+        setUser(await response.json());
       } else {
+        // Token inválido ou expirado
         Cookies.remove('auth_token');
         setUser(null);
       }
@@ -52,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       Cookies.remove('auth_token');
       setUser(null);
     } finally {
-      setIsAuthLoading(false);
+      setIsAuthLoading(false); // Só finaliza o carregamento após a tentativa
     }
   }, []);
 
@@ -61,9 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUserData]);
 
   const login = async (token: string) => {
-    setIsAuthLoading(true);
     Cookies.set('auth_token', token, { expires: 1 });
-    await fetchUserData();
+    await fetchUserData(); // Recarrega os dados do usuário após o login
   };
 
   const logout = () => {
@@ -72,7 +75,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/login');
   };
 
-  const value = { isAuthenticated: !!user, user, isAuthLoading, login, logout, refetchUser: fetchUserData };
+  const value = {
+    isAuthenticated: !!user,
+    user,
+    isAuthLoading,
+    login,
+    logout,
+    refetchUser: fetchUserData,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
