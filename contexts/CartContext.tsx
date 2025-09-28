@@ -1,5 +1,4 @@
 // Caminho: contexts/CartContext.tsx
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -15,7 +14,6 @@ interface CartItem {
 
 interface CartContextType {
   cartItems: CartItem[];
-  // ATUALIZADO: Agora aceita uma quantidade
   addToCart: (item: Omit<CartItem, 'quantidade'>, quantity: number) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
@@ -24,7 +22,8 @@ interface CartContextType {
   itemCount: number;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+// Corrigido: Exportando o CartContext
+export const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -45,14 +44,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const existingItem = prevItems.find((item) => item.id === itemToAdd.id);
 
       if (existingItem) {
-        // Se o item já existe, SOMA a nova quantidade à existente
         return prevItems.map((item) =>
           item.id === itemToAdd.id
             ? { ...item, quantidade: item.quantidade + quantity }
             : item
         );
       } else {
-        // Se é um item novo, adiciona ao carrinho com a quantidade especificada
         return [...prevItems, { ...itemToAdd, quantidade: quantity }];
       }
     });

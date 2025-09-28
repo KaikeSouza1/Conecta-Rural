@@ -1,54 +1,52 @@
-
+// Caminho: app/api/auth/login/route.ts
 
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { SignJWT } from 'jose';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { email, senha } = body;
+    const { email, senha } = await request.json();
 
-    // 1. Validação de entrada
     if (!email || !senha) {
       return NextResponse.json({ error: 'Email e senha são obrigatórios.' }, { status: 400 });
     }
 
-    // 2. Encontrar o usuário no banco de dados
-    const usuario = await prisma.usuario.findUnique({
-      where: { email: email },
-    });
+    const usuario = await prisma.usuario.findUnique({ where: { email } });
 
     if (!usuario) {
-      // Usamos uma mensagem genérica por segurança, para não revelar se o email existe ou não.
-      return NextResponse.json({ error: 'Credenciais inválidas.' }, { status: 401 }); // 401 Unauthorized
-    }
-
-    // 3. Comparar a senha enviada com a senha criptografada do banco
-    const senhaCorreta = await bcrypt.compare(senha, usuario.senhaHash);
-
-    if (!senhaCorreta) {
       return NextResponse.json({ error: 'Credenciais inválidas.' }, { status: 401 });
     }
 
-    // 4. Se a senha estiver correta, gerar o Token JWT
-    const tokenPayload = {
-      usuarioId: usuario.id.toString(), // Converte o BigInt para string
-      tipoUsuario: usuario.tipoUsuario,
-      nome: usuario.nomeCompleto,
-    };
+    // --- CORREÇÃO APLICADA AQUI ---
+    // Trocado 'usuario.senha' por 'usuario.senhaHash' para bater com o banco de dados.
+    const senhaValida = await bcrypt.compare(senha, usuario.senhaHash);
+    // --- FIM DA CORREÇÃO ---
+    
+    if (!senhaValida) {
+      return NextResponse.json({ error: 'Credenciais inválidas.' }, { status: 401 });
+    }
 
-    // Assina o token com a chave secreta e define uma validade
-    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET!, {
-      expiresIn: '1d', // Token válido por 1 dia
-    });
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      console.error('JWT_SECRET não está definido no ambiente.');
+      return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });
+    }
 
-    // 5. Retornar o token para o cliente
-    return NextResponse.json({ token: token });
+    const key = new TextEncoder().encode(secret);
+
+    const token = await new SignJWT({ usuarioId: usuario.id.toString() })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('1d')
+      .sign(key);
+
+    return NextResponse.json({ token });
 
   } catch (error) {
     console.error('Erro no login:', error);
-    return NextResponse.json({ error: 'Ocorreu um erro interno no servidor.' }, { status: 500 });
+    return NextResponse.json({ error: 'Não foi possível fazer o login.' }, { status: 500 });
   }
 }

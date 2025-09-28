@@ -1,36 +1,60 @@
+// Caminho: app/api/auth/me/route.ts
+
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { jwtVerify } from 'jose';
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
-
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get('authorization')?.split(' ')[1];
-    if (!token) return NextResponse.json({ error: 'Token não encontrado.' }, { status: 401 });
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.split(' ')[1];
 
-    const { payload } = await jwtVerify(token, secret);
-    const usuarioId = payload.usuarioId as string;
+    if (!token) {
+      return NextResponse.json({ error: 'Token não fornecido.' }, { status: 401 });
+    }
+    
+    // --- LÓGICA DE VERIFICAÇÃO PADRONIZADA ---
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      console.error('JWT_SECRET não está definido no ambiente.');
+      return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });
+    }
+    
+    const key = new TextEncoder().encode(secret);
+
+    const { payload } = await jwtVerify(token, key);
+    // --- FIM DA PADRONIZAÇÃO ---
+    
+    const usuarioId = BigInt(payload.usuarioId as string);
 
     const usuario = await prisma.usuario.findUnique({
-      where: { id: BigInt(usuarioId) },
+      where: { id: usuarioId },
       select: {
         id: true,
         nomeCompleto: true,
         email: true,
         tipoUsuario: true,
-        cpfCnpj: true, // <-- ADICIONADO AQUI
         nomeNegocio: true,
         descricaoNegocio: true,
         logoUrl: true,
       },
     });
 
-    if (!usuario) return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
-    const usuarioSeguro = { ...usuario, id: usuario.id.toString() };
-    return NextResponse.json(usuarioSeguro);
+    if (!usuario) {
+      return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });
+    }
+
+    // Convertendo o BigInt para string para a resposta JSON
+    const userResponse = {
+      ...usuario,
+      id: usuario.id.toString(),
+    };
+
+    return NextResponse.json(userResponse);
+
   } catch (error) {
-    return NextResponse.json({ error: 'Erro ao buscar dados do usuário.' }, { status: 500 });
+    console.error("Erro ao autenticar usuário:", error);
+    return NextResponse.json({ error: 'Token inválido ou expirado.' }, { status: 401 });
   }
 }

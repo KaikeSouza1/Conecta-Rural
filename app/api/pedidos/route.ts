@@ -80,12 +80,21 @@ export async function POST(request: NextRequest) {
             data: { estoque: { decrement: item.quantidade } },
           });
         }
-        arrayDePedidos.push(pedido);
+        // Convertendo BigInts para strings para serialização JSON segura
+        const pedidoSerializavel = {
+          ...pedido,
+          id: pedido.id.toString(),
+          consumidorId: pedido.consumidorId.toString(),
+          enderecoEntregaId: pedido.enderecoEntregaId.toString(),
+        }
+        arrayDePedidos.push(pedidoSerializavel);
       }
       return arrayDePedidos;
     });
 
-    return NextResponse.json({ success: true, numPedidosCriados: pedidosCriados.length });
+    // --- CORREÇÃO APLICADA AQUI ---
+    // Agora retornamos a lista de pedidos criados
+    return NextResponse.json({ success: true, pedidosCriados: pedidosCriados });
 
   } catch (error: any) {
     console.error('Erro ao criar pedido:', error);
@@ -98,7 +107,7 @@ export async function POST(request: NextRequest) {
     
     if (errorMessage.includes('Estoque insuficiente')) {
         const friendlyMessage = errorMessage.split('CONTEXT:')[0].split('DETAIL:')[0].replace(/ERROR:|ERRO:/g, '').trim();
-        return NextResponse.json({ error: friendlyMessage }, { status: 409 }); // 409 Conflict é um bom status para isso
+        return NextResponse.json({ error: friendlyMessage }, { status: 409 });
     }
 
     return NextResponse.json({ error: 'Não foi possível processar o pedido.' }, { status: 500 });

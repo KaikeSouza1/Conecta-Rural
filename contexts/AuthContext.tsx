@@ -9,7 +9,6 @@ interface User {
   nomeCompleto: string;
   email: string;
   tipoUsuario: string;
-  cpfCnpj: string;
   nomeNegocio: string | null;
   descricaoNegocio: string | null;
   logoUrl: string | null;
@@ -22,41 +21,46 @@ interface AuthContextType {
   login: (token: string) => Promise<void>;
   logout: () => void;
   refetchUser: () => Promise<void>;
+  token: string | null; // Adicionado para acesso ao token
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Corrigido: Exportando o AuthContext
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(Cookies.get('auth_token') || null);
   const router = useRouter();
 
   const fetchUserData = useCallback(async () => {
-    const token = Cookies.get('auth_token');
-    if (!token) {
+    const authToken = Cookies.get('auth_token');
+    if (!authToken) {
       setUser(null);
+      setToken(null);
       setIsAuthLoading(false);
       return;
     }
     
-    // Mantemos o 'isAuthLoading' como true até a resposta do fetch
+    setToken(authToken);
+    
     try {
-      const response = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${authToken}` } });
       if (response.ok) {
-        setUser(await response.json());
+        const userData = await response.json();
+        setUser(userData);
       } else {
-        // Token inválido ou expirado
         Cookies.remove('auth_token');
         setUser(null);
+        setToken(null);
       }
     } catch (error) {
       console.error("Erro ao buscar dados do usuário:", error);
       Cookies.remove('auth_token');
       setUser(null);
+      setToken(null);
     } finally {
-      setIsAuthLoading(false); // Só finaliza o carregamento após a tentativa
+      setIsAuthLoading(false);
     }
   }, []);
 
@@ -64,25 +68,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUserData();
   }, [fetchUserData]);
 
-  const login = async (token: string) => {
-    Cookies.set('auth_token', token, { expires: 1 });
-    await fetchUserData(); // Recarrega os dados do usuário após o login
+  const login = async (newToken: string) => {
+    setIsAuthLoading(true);
+    Cookies.set('auth_token', newToken, { expires: 1 });
+    setToken(newToken);
+    await fetchUserData();
   };
 
   const logout = () => {
     Cookies.remove('auth_token');
     setUser(null);
+    setToken(null);
     router.push('/login');
   };
 
-  const value = {
-    isAuthenticated: !!user,
-    user,
-    isAuthLoading,
-    login,
-    logout,
-    refetchUser: fetchUserData,
-  };
+  const value = { isAuthenticated: !!user, user, isAuthLoading, login, logout, refetchUser: fetchUserData, token };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
